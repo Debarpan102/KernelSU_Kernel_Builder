@@ -46,7 +46,7 @@ jobs:
     - name: Download kernel source
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone --recursive https://github.com/Debarpan102/kernel_oplus_RMX3461_22x -b nksu-224 android-kernel --depth=1
+        git clone --recursive https://github.com/Debarpan102/kernel_oplus_RMX3461_22x -b ksu-234 android-kernel --depth=1
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/scripts
         sed -i 's/ -dirty//g' setlocalversion
         cd $GITHUB_WORKSPACE/patches

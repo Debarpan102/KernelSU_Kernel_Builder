@@ -46,7 +46,7 @@ jobs:
     - name: Download kernel source
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone --recursive https://github.com/Debarpan102/kernel_oplus_RMX3461_22x -b susfs android-kernel --depth=1
+        git clone --recursive https://github.com/Debarpan102/kernel_oplus_RMX3461_22x -b susfs-254 android-kernel --depth=1
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/scripts
         sed -i 's/ -dirty//g' setlocalversion
         cd $GITHUB_WORKSPACE/patches
@@ -105,7 +105,7 @@ jobs:
       if: env.CHECK_IMAGE == 'true'
       uses: actions/upload-artifact@v4
       with:
-        name: AK3-224-ksu-Unofficial-RMX3461-SM7325(nika)-${{ env.KSUVER }}-${{ env.BUILD_TIME }}
+        name: AK3-ksu-next-Unofficial-RMX3461-SM7325(nika)-${{ env.KSUVER }}-${{ env.BUILD_TIME }}
         path: kernel_workspace/AnyKernel3/*
 
     

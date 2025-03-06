@@ -84,7 +84,7 @@ jobs:
         fi  
 
         # Check DTBO
-        if [ -f android-kernel/out/arch/arm64/boot/dtbo.img ]; then  
+        if [ -f android-kernel/out/arch/arm64/boot/*.img ]; then  
         echo "CHECK_DTBO=true" >> $GITHUB_ENV  
         else  
         echo "DTBO image is missing!"  
@@ -102,7 +102,7 @@ jobs:
         sed -i 's!BLOCK=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!BLOCK=auto;!g' AnyKernel3/anykernel.sh
         sed -i 's/IS_SLOT_DEVICE=0;/IS_SLOT_DEVICE=auto;/g' AnyKernel3/anykernel.sh
         cp android-kernel/out/arch/arm64/boot/Image AnyKernel3/
-        cp android-kernel/out/arch/arm64/boot/dtbo.img Anykernel3/
+        cp android-kernel/out/arch/arm64/boot/*.img Anykernel3/
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
     
     - name: Upload image

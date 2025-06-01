@@ -80,9 +80,19 @@ jobs:
            echo "Kernel output file is empty"
            exit 1
        fi
+       
+    - name: Check a dtbo output files
+      run: |
+       cd $GITHUB_WORKSPACE/kernel_workspace
+       if [ -f android-kernel/out/arch/arm64/boot/dtbo.img ]; then
+           echo "CHECK_DTBO=true" >> $GITHUB_ENV
+       else
+           echo "dtbo output file is empty"
+           exit 1
+       fi
       
     - name: Make Anykernel3
-      if: env.CHECK_IMAGE == 'true'
+      if: en kyuv.CHECK_IMAGE == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         git clone https://github.com/osm0sis/AnyKernel3 --depth=1 AnyKernel3
@@ -98,6 +108,15 @@ jobs:
       with:
         name: Image-${{ env.KSUVER }}
         path: kernel_workspace/android-kernel/out/arch/arm64/boot/Image
+        
+    - name: Upload dtbo.img
+      if: env.CHECK_DTBO == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: dtbo.img
+        path: kernel_workspace/android-kernel/out/arch/arm64/boot/dtbo.img
+        if-no-files-found: ignore
+        retention-days: 7
 
     - name: Upload AnyKernel3
       if: env.CHECK_IMAGE == 'true'

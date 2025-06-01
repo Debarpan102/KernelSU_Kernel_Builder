@@ -90,6 +90,16 @@ jobs:
            echo "dtbo output file is empty"
            exit 1
        fi
+       
+    - name: Check a dtb output files
+      run: |
+       cd $GITHUB_WORKSPACE/kernel_workspace
+       if [ -f android-kernel/out/arch/arm64/boot/dtb.img ]; then
+           echo "CHECK_DTB=true" >> $GITHUB_ENV
+       else
+           echo "dtb output file is empty"
+           exit 1
+       fi
       
     - name: Make Anykernel3
       if: env.CHECK_IMAGE == 'true'
@@ -100,6 +110,8 @@ jobs:
         sed -i 's!BLOCK=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!BLOCK=auto;!g' AnyKernel3/anykernel.sh
         sed -i 's/IS_SLOT_DEVICE=0;/IS_SLOT_DEVICE=auto;/g' AnyKernel3/anykernel.sh
         cp android-kernel/out/arch/arm64/boot/Image AnyKernel3/
+        cp android-kernel/out/arch/arm64/boot/dtbo.img AnyKernel3/
+        cp android-kernel/out/arch/arm64/boot/dtb.img AnyKernel3/
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
     
     - name: Upload image
@@ -115,6 +127,15 @@ jobs:
       with:
         name: dtbo.img
         path: kernel_workspace/android-kernel/out/arch/arm64/boot/dtbo.img
+        if-no-files-found: ignore
+        retention-days: 7
+        
+    - name: Upload dtb.img
+      if: env.CHECK_DTB == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: dtb.img
+        path: kernel_workspace/android-kernel/out/arch/arm64/boot/dtb.img
         if-no-files-found: ignore
         retention-days: 7
 

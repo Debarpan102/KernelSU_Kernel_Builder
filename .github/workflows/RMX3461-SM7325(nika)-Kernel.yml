@@ -92,7 +92,7 @@ jobs:
        fi
       
     - name: Make Anykernel3
-      if: en kyuv.CHECK_IMAGE == 'true'
+      if: env.CHECK_IMAGE == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         git clone https://github.com/osm0sis/AnyKernel3 --depth=1 AnyKernel3

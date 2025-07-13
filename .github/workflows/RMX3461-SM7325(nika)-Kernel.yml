@@ -50,13 +50,6 @@ jobs:
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/scripts
         sed -i 's/ -dirty//g' setlocalversion
         
-    - name: Setup KernelSU-Next
-      run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
-        curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -
-        KSU_VERSION=$(cd KernelSU-Next && expr $(/usr/bin/git rev-list --count HEAD) + 10200)
-        echo "KSUVER=KSU_$KSU_VERSION" >> $GITHUB_ENV
-    
     - name: Build kernel
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
@@ -69,38 +62,34 @@ jobs:
         EX_CMD="LD=ld.lld LLVM=1 LLVM_IAS=1"
         DEFCONFIG="vendor/lahaina-qgki_defconfig"
         make O=out ARCH=arm64 CC=clang $BA_CMD $EX_CMD $DEFCONFIG
-        make -j$(nproc --all) O=out ARCH=arm64 CC=clang $BA_CMD $EX_CMD 
-    
-    - name: Check a kernel output files
+        make modules_install -j$(nproc --all) 
+        make modules_install INSTALL_MOD_PATH=/out/modules
+        
+    - name: Verify kernel modules exist
       run: |
-       cd $GITHUB_WORKSPACE/kernel_workspace
-       if [ -f android-kernel/out/arch/arm64/boot/Image ]; then
-           echo "CHECK_IMAGE=true" >> $GITHUB_ENV
-       else
-           echo "Kernel output file is empty"
-           exit 1
-       fi
-      
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        MODULES_DIR="android-kernel/out/modules/lib/modules/5.4.292/kernel/"
+        if [ $(find "$MODULES_DIR" -name "*.ko*" 2>/dev/null | wc -l) -gt 0 ]; then
+        echo "CHECK_MODULES=true" >> $GITHUB_ENV
+        echo "Found kernel modules in $MODULES_DIR"
+        else
+        echo "::error::No kernel modules found in $MODULES_DIR"
+        echo "Directory contents:"
+        ls -laR "$MODULES_DIR" || true
+        exit 1
+        fi
+    
     - name: Make Anykernel3
-      if: env.CHECK_IMAGE == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         git clone https://github.com/osm0sis/AnyKernel3 --depth=1 AnyKernel3
         sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
         sed -i 's!BLOCK=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!BLOCK=auto;!g' AnyKernel3/anykernel.sh
         sed -i 's/IS_SLOT_DEVICE=0;/IS_SLOT_DEVICE=auto;/g' AnyKernel3/anykernel.sh
-        cp android-kernel/out/arch/arm64/boot/Image AnyKernel3/
+        cp android-kernel/out/modules/lib/modules/5.4.254/* AnyKernel3/
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
-    
-    - name: Upload image
-      if: env.CHECK_IMAGE == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: Image-${{ env.KSUVER }}
-        path: kernel_workspace/android-kernel/out/arch/arm64/boot/Image
 
     - name: Upload AnyKernel3
-      if: env.CHECK_IMAGE == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: AK3-ksu-next-Unofficial-RMX3461-SM7325(nika)-${{ env.KSUVER }}-${{ env.BUILD_TIME }}

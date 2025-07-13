@@ -62,6 +62,7 @@ jobs:
         EX_CMD="LD=ld.lld LLVM=1 LLVM_IAS=1"
         DEFCONFIG="vendor/lahaina-qgki_defconfig"
         make O=out ARCH=arm64 CC=clang $BA_CMD $EX_CMD $DEFCONFIG
+        make -j$(nproc --all) O=out ARCH=arm64 CC=clang $BA_CMD $EX_CMD
         make modules_install -j$(nproc --all) 
         make modules_install INSTALL_MOD_PATH=/out/modules
         
